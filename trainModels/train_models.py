@@ -4,6 +4,7 @@ from logistics_regression import LogisticRegressionTrainer
 from decision_tree import DecisionTreeTrainer
 from knn import KnnTrainer
 from naive_bayes import NaiveBayesTrainer
+from svm import SvmTrainer
 from training_utils import prepare_training_data, RED, GREEN, BLUE, RESET
 
 
@@ -84,6 +85,9 @@ def main():
                 trainer.train_naive_bayes(train_features, train_labels)
             case 5:
                 print(f"{GREEN}Training Support Vector Machine model...{RESET}")
+                trainer = SvmTrainer(
+                    model_file_path=model_file_path, scaler_file_path=scaler_file_path)
+                trainer.train_svm(train_features, train_labels)
 
     except ValueError as error:
         print(f"{RED}{error}{RESET}")
