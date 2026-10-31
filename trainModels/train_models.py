@@ -2,6 +2,7 @@ import os
 
 from logistics_regression import LogisticRegressionTrainer
 from decision_tree import DecisionTreeTrainer
+from knn import KnnTrainer
 from training_utils import prepare_training_data, RED, GREEN, BLUE, RESET
 
 
@@ -67,6 +68,14 @@ def main():
                 trainer.train_decision_tree(train_features, train_labels)
             case 3:
                 print(f"{GREEN}Training K-Nearest Neighbors model...{RESET}")
+                valueof_kneighbour = int(input(
+                    f"{GREEN}Enter the number of neighbors for K-Nearest Neighbors Algorithm: {RESET}"))
+                if valueof_kneighbour <= 0:
+                    raise ValueError(
+                        "Number of neighbors must be a positive integer.")
+                trainer = KnnTrainer(
+                    model_file_path=model_file_path, scaler_file_path=scaler_file_path, n_neighbors=valueof_kneighbour)
+                trainer.train_knn(train_features, train_labels)
             case 4:
                 print(f"{GREEN}Training Naive Bayes model...{RESET}")
             case 5:
