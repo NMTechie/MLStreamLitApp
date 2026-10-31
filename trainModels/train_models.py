@@ -1,10 +1,14 @@
 import os
 
 from logistics_regression import LogisticRegressionTrainer
+from decision_tree import DecisionTreeTrainer
 from training_utils import prepare_training_data, RED, GREEN, BLUE, RESET
 
 
 # Shared across every model so the train/test split and scaler stay consistent.
+# This RANDOM_STATE seed is used to ensure same set of splitted train/test data for every run.
+# This ensures every algo being trained uses the same train/test split.
+# This provides consistency in evaluation across different models.
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 MAX_ITERATION = 1000
@@ -58,6 +62,9 @@ def main():
                 trainer.train_logistic_regression(train_features, train_labels)
             case 2:
                 print(f"{GREEN}Training Decision Tree model...{RESET}")
+                trainer = DecisionTreeTrainer(
+                    model_file_path=model_file_path, scaler_file_path=scaler_file_path, random_state=RANDOM_STATE)
+                trainer.train_decision_tree(train_features, train_labels)
             case 3:
                 print(f"{GREEN}Training K-Nearest Neighbors model...{RESET}")
             case 4:
