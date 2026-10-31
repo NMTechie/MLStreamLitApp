@@ -13,6 +13,13 @@
         "8501"
       ],
       "justMyCode": true
+    },
+    {
+      "name": "TrainModelsDebugConfig",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/trainModels/train_models.py",
+      "justMyCode": true
     }
   ]
 }

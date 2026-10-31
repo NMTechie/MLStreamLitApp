@@ -59,6 +59,7 @@ def validate_uploaded_data(dataframe):
             f"Uploaded file must include the '{TARGET_COLUMN}' column "
             "so evaluation metrics can be calculated."
         )
+    # This step may need to be optimized for data pre-processing pipeline.
     if dataframe.isnull().values.any():
         raise ValueError(
             "Uploaded file contains missing values. Please clean the data first.")
