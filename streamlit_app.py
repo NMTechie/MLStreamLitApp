@@ -22,7 +22,6 @@ from sklearn.metrics import (
 )
 
 MODELS_DIR = "models"
-SCALER_FILE = "scaler.pkl"
 TARGET_COLUMN = "price_range"
 
 # Maps dropdown labels to their saved model file names
@@ -32,6 +31,15 @@ MODEL_FILES = {
     "K-Nearest Neighbors": "knn.pkl",
     "Naive Bayes": "naive_bayes.pkl",
     "Support Vector Machine": "svm.pkl",
+}
+
+# Each model owns its own scaler file, paired with its own model file.
+SCALER_FILES = {
+    "Logistic Regression": "logistic_regression_scaler.pkl",
+    "Decision Tree": "decision_tree_scaler.pkl",
+    "K-Nearest Neighbors": "knn_scaler.pkl",
+    "Naive Bayes": "naive_bayes_scaler.pkl",
+    "Support Vector Machine": "svm_scaler.pkl",
 }
 
 
@@ -44,9 +52,9 @@ def load_pickle_file(file_path):
 
 
 def load_selected_model(model_name):
-    """Load the chosen model along with the scaler used during training."""
+    """Load the chosen model along with its own scaler, fit during that model's training."""
     model_path = os.path.join(MODELS_DIR, MODEL_FILES[model_name])
-    scaler_path = os.path.join(MODELS_DIR, SCALER_FILE)
+    scaler_path = os.path.join(MODELS_DIR, SCALER_FILES[model_name])
     model = load_pickle_file(model_path)
     scaler = load_pickle_file(scaler_path)
     return model, scaler
