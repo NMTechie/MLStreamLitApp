@@ -158,6 +158,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+streamlitenv/
 
 # Spyder project settings
 .spyderproject
