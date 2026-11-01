@@ -9,6 +9,7 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn import metrics
 import streamlit as st
 from sklearn.metrics import (
     accuracy_score,
@@ -95,23 +96,61 @@ def compute_evaluation_metrics(true_labels, predicted_labels, predicted_probabil
     return metrics
 
 
-def plot_confusion_matrix(true_labels, predicted_labels):
-    """Render a confusion matrix heatmap for visual inspection of model errors."""
+def plot_confusion_matrix(true_labels, predicted_labels, model_name):
+    """Create a confusion matrix plot for the given true and predicted labels."""
     matrix = confusion_matrix(true_labels, predicted_labels)
     figure, axis = plt.subplots(figsize=(5, 4))
     sns.heatmap(matrix, annot=True, fmt="d", cmap="Blues", ax=axis)
     axis.set_xlabel("Predicted Label")
     axis.set_ylabel("True Label")
-    axis.set_title("Confusion Matrix")
+    axis.set_title(f"Confusion Matrix — {model_name}")
     return figure
 
 
-def main():
-    st.title("Mobile Price Range Classifier - Model Evaluation")
-    st.write("Upload test data and evaluate pre-trained classification models.")
+def build_classification_report_table(true_labels, predicted_labels):
+    """Convert the classification report into a properly aligned table."""
+    report_dict = classification_report(
+        true_labels, predicted_labels, output_dict=True)
+    report_table = pd.DataFrame(report_dict).transpose()
+    return report_table.round(4)
 
-    model_name = st.selectbox("Select a model", list(MODEL_FILES.keys()))
-    uploaded_file = st.file_uploader("Upload test dataset (CSV)", type=["csv"])
+
+def main():
+    # Custom styling to override the default red tab highlight/underline color.
+    st.markdown("""
+        <style>
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 8px 16px;
+        }
+        .stTabs [aria-selected="true"] {
+            color: #1f77b4;
+        }
+        .stTabs [data-baseweb="tab-highlight"] {
+            background-color: #1f77b4;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    st.title("📱 Mobile Price Range Classifier")
+    st.write(
+        "Compares 5 classification models — Logistic Regression, Decision Tree, "
+        "KNN, Naive Bayes, and SVM — trained on the Mobile Price Classification "
+        "dataset (20 features, 4 price-range classes). Upload labeled test data "
+        "in the sidebar to evaluate any of the pre-trained models."
+    )
+    st.set_page_config(
+        page_title="Mobile Price Range Classifier",
+        page_icon="📱",
+        layout="wide",
+    )
+    with st.sidebar:
+        st.header("Configuration")
+        model_name = st.selectbox("Select a model", list(MODEL_FILES.keys()))
+        uploaded_file = st.file_uploader(
+            "Upload test dataset (CSV)", type=["csv"])
+        st.caption("Upload only labeled test data — training happens offline.")
 
     if uploaded_file is None:
         st.info("Please upload a CSV file to begin evaluation.")
@@ -120,6 +159,9 @@ def main():
     try:
         test_data = pd.read_csv(uploaded_file)
         validate_uploaded_data(test_data)
+        st.subheader("Uploaded Data Preview")
+        st.dataframe(test_data.head())
+
         feature_columns, true_labels = split_features_and_target(test_data)
 
         model, scaler = load_selected_model(model_name)
@@ -131,14 +173,26 @@ def main():
         metrics = compute_evaluation_metrics(
             true_labels, predicted_labels, predicted_probabilities)
 
-        st.subheader("Evaluation Metrics")
-        st.table(pd.DataFrame(metrics.items(), columns=["Metric", "Value"]))
+        tab_metrics, tab_matrix, tab_report = st.tabs(
+            ["Evaluation Metrics", "Confusion Matrix", "Classification Report"])
 
-        st.subheader("Confusion Matrix")
-        st.pyplot(plot_confusion_matrix(true_labels, predicted_labels))
+        with tab_metrics:
+            st.subheader(f"Evaluation Metrics — {model_name}")
+            metric_columns = st.columns(3)
+            for index, (metric_name, metric_value) in enumerate(metrics.items()):
+                metric_columns[index % 3].metric(
+                    metric_name, f"{metric_value:.4f}")
 
-        st.subheader("Classification Report")
-        st.text(classification_report(true_labels, predicted_labels))
+        with tab_matrix:
+            st.subheader(f"Confusion Matrix — {model_name}")
+            st.pyplot(plot_confusion_matrix(
+                true_labels, predicted_labels, model_name))
+
+        with tab_report:
+            st.subheader("Classification Report")
+            report_table = build_classification_report_table(
+                true_labels, predicted_labels)
+            st.dataframe(report_table, use_container_width=True)
 
     except FileNotFoundError as error:
         st.error(f"Model file missing: {error}")
